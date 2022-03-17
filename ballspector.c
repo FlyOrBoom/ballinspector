@@ -39,66 +39,63 @@ int sum[nSensors];
 int i;
 
 task main()
-{
-	SensorValue[enc1] = 0; // Reset encoder
+{ while(1) {
+	// Raise scanner to catch ball
+	while(SensorValue[enc1] < 0) motor[mot1] = 128;
+	wait(0.1);
+	motor[mot1] = 0;
 
-	while(true)
+	// Reset encoder
+	SensorValue[enc1] = 0;
+
+	// Release ball from queue
+	motor[ser1] = -127;
+	wait(1);
+	motor[ser1] = 127;
+	wait(1);
+
+	// Turn on flashlight
+	motor[led1] = -127;
+
+	// Sample until type is not 0, but have a minimum of samples first
+	for(index = 0; type == 0 || index < nSamples; index++)
 	{
-		// Raise scanner to catch ball
-		while(SensorValue[enc1] < 0) motor[mot1] = 128;
-		wait(0.1);
-		motor[mot1] = 0;
-		
-		// Release ball from queue
-		motor[ser1] = -127;
-		wait(1);
-		motor[ser1] = 127;
-		wait(1);
+		// Add new samples to arrays
+		arr[index % nSamples][Vis] = SensorValue[vis1];
+		arr[index % nSamples][Inf] = SensorValue[inf1] + SensorValue[inf2];
 
-		// Turn on flashlight
-		motor[led1] = -127;
-		
-		// Sample until type is not 0, but have a minimum of samples first
-		for(index = 0; type == 0 || index < nSamples; index++)
+		// Find sums of arrays
+		sum[Vis] = 0;
+		sum[Inf] = 0;
+		for(i = 0; i < nSamples; i++)
 		{
-			// Add new samples to arrays
-			arr[index % nSamples][Vis] = SensorValue[vis1];
-			arr[index % nSamples][Inf] = SensorValue[inf1] + SensorValue[inf2];
-
-			// Find sums of arrays
-			sum[Vis] = 0;
-			sum[Inf] = 0;
-			for(i = 0; i < nSamples; i++)
-			{
-				sum[Vis] += arr[i][Vis];
-				sum[Inf] += arr[i][Inf];
-			}
-
-			// Take averages
-			avg[Vis] = sum[Vis] * 1000 / norm[Vis] / nSamples;
-			avg[Inf] = sum[Inf] * 1000 / norm[Inf] / nSamples;
-
-			// Find best type match
-			minDist = 1E9;
-			type = 0;
-			for(i = 0; i < (int)nMaterials; i++)
-			{
-				dist = square(avg[Vis] - known[i][Vis]) + square(avg[Inf] - known[i][Inf]);
-
-				if(dist > minDist) continue;
-				
-				minDist = dist;
-				type = i;
-			}
-
+			sum[Vis] += arr[i][Vis];
+			sum[Inf] += arr[i][Inf];
 		}
 
-		// Turn off flashlight
-		motor[led1] = 0;
-		
-		// Lower scanner to drop ball
-		while(SensorValue[enc1] > -200) motor[mot1] = -128;
-		motor[mot1] = 0;
-		wait(1);
+		// Take averages
+		avg[Vis] = sum[Vis] * 1000 / norm[Vis] / nSamples;
+		avg[Inf] = sum[Inf] * 1000 / norm[Inf] / nSamples;
+
+		// Find best type match
+		minDist = 1E9;
+		type = 0;
+		for(i = 0; i < (int)nMaterials; i++)
+		{
+			dist = square(avg[Vis] - known[i][Vis]) + square(avg[Inf] - known[i][Inf]);
+
+			if(dist > minDist) continue;
+
+			minDist = dist;
+			type = i;
+		}
 	}
-}
+
+	// Turn off flashlight
+	motor[led1] = 0;
+
+	// Lower scanner to drop ball
+	while(SensorValue[enc1] > -200) motor[mot1] = -128;
+	motor[mot1] = 0;
+	wait(1);
+} }
