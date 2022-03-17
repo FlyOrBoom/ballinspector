@@ -51,36 +51,40 @@ task main()
 
 	while(true)
 	{
+		// Raise scanner to catch ball
 		while(SensorValue[enc1] < 0) motor[mot1] = 128;
 		wait(0.1);
 		motor[mot1] = 0;
-		wait(2);
+		
+		// Release ball from queue
+		motor[ser1] = -127;
+		wait(1);
+		motor[ser1] = 127;
+		wait(1);
 
-		resetTimer(timer1);
-
-
-		while(time1[timer1] < 1000 || type == 0)
+		// Sample until type is not 0, but have a minimum of samples first
+		for(index = 0; type == 0 || index < nSamples; index++)
 		{
-			arr[index][Vis] = SensorValue[vis1];
-			arr[index][Inf] = SensorValue[inf1] + SensorValue[inf2];
-			index++;
-			index %= nSamples;
+			// Add new samples to arrays
+			arr[index % nSamples][Vis] = SensorValue[vis1];
+			arr[index % nSamples][Inf] = SensorValue[inf1] + SensorValue[inf2];
 
+			// Find sums of arrays
 			sum[Vis] = 0;
 			sum[Inf] = 0;
-
 			for(int i = 0; i < nSamples; i++)
 			{
 				sum[Vis] += arr[i][Vis];
 				sum[Inf] += arr[i][Inf];
 			}
 
+			// Take averages
 			avg[Vis] = sum[Vis] * 1000 / norm[Vis] / nSamples;
 			avg[Inf] = sum[Inf] * 1000 / norm[Inf] / nSamples;
 
+			// Find best type match
 			minDist = 100000000;
 			type = 0;
-
 			for(int i = 0; i < (int)nMaterials - 1; i++)
 			{
 				dist = square(avg[Vis] - known[i][Vis]) + square(avg[Inf] - known[i][Inf]);
@@ -94,7 +98,7 @@ task main()
 
 		}
 
-		// drop
+		// Lower scanner to drop ball
 		while(SensorValue[enc1] > -200) motor[mot1] = -128;
 		motor[mot1] = 0;
 		wait(1);
