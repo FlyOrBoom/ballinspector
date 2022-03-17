@@ -40,7 +40,6 @@ int i;
 
 task main()
 {
-	motor[led1] = -127; // Turn on flashlight
 	SensorValue[enc1] = 0; // Reset encoder
 
 	while(true)
@@ -56,6 +55,9 @@ task main()
 		motor[ser1] = 127;
 		wait(1);
 
+		// Turn on flashlight
+		motor[led1] = -127;
+		
 		// Sample until type is not 0, but have a minimum of samples first
 		for(index = 0; type == 0 || index < nSamples; index++)
 		{
@@ -91,6 +93,9 @@ task main()
 
 		}
 
+		// Turn off flashlight
+		motor[led1] = 0;
+		
 		// Lower scanner to drop ball
 		while(SensorValue[enc1] > -200) motor[mot1] = -128;
 		motor[mot1] = 0;
