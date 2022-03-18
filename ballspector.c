@@ -4,6 +4,7 @@
 #pragma config(Sensor, dgtl11, enc1, sensorQuadEncoder)
 #pragma config(Motor,  port1,  led1, tmotorVexFlashlight, openLoop, reversed)
 #pragma config(Motor,  port2,  ser1, tmotorServoStandard, openLoop)
+#pragma config(Motor,  port3,  ser2, tmotorServoStandard, openLoop)
 #pragma config(Motor,  port10, mot1, tmotorVex269_HBridge, openLoop)
 
 #define square(n) n*n
@@ -89,6 +90,9 @@ task main()
 			minDist = dist;
 			type = i;
 		}
+
+		// Adjust redirector
+		motor[ser2] = 10*(type - (int)nMaterials);
 	}
 
 	// Turn off flashlight
