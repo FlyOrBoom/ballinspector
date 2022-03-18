@@ -49,16 +49,16 @@ task main()
 	SensorValue[enc1] = 0;
 
 	// Release ball from queue
-	motor[ser1] = -127;
-	wait(1);
-	motor[ser1] = 127;
+	motor[ser1] = -50;
+	wait(0.11);
+	motor[ser1] = 10;
 	wait(1);
 
 	// Turn on flashlight
 	motor[led1] = -127;
-
+	type = 0;
 	// Sample until type is not 0, but have a minimum of samples first
-	for(index = 0; type == 0 || index < nSamples; index++)
+	for(index = type = 0; type == 0 || index < nSamples; index++)
 	{
 		// Add new samples to arrays
 		arr[index % nSamples][Vis] = SensorValue[vis1];
@@ -78,7 +78,7 @@ task main()
 		avg[Inf] = sum[Inf] * 1000 / norm[Inf] / nSamples;
 
 		// Find best type match
-		minDist = 1E9;
+		minDist = 1000000;
 		type = 0;
 		for(i = 0; i < (int)nMaterials; i++)
 		{
