@@ -1,27 +1,31 @@
 motors = (motor_1, motor_2)
-angles = (0, -20, 45, 20, -45)
+angles = (-20, 45, 20, -45, 0)
 solenoids = (solenoid_a, solenoid_b)
 leds = (led_f, led_g, led_e)
 
 def aim(degrees):
-    write("Aiming...")
     motor_1.spin_to_position((degrees * 7), DEGREES, wait=False)
     motor_2.spin_to_position((degrees * 7), DEGREES, wait=True)
 
-def write(text, fill_color=Color.TRANSPARENT, pen_color=Color.WHITE):
+def write(text, fill_color=Color.BLACK, pen_color=Color.WHITE):
+    brain.screen.set_cursor(1,1)
+    brain.screen.set_fill_color(fill_color)
+    brain.screen.set_pen_color(pen_color)
     brain.screen.draw_rectangle(0, 0, 1000, 1000)
     brain.screen.print(text)
 
-def shoot():
-    brain.screen.clear_screen()
+def shoot(angle):
+    write("Waiting...")
+    while not limit_switch_h.pressing():
+        wait(5, MSEC)
 
     for countdown in range(10, 0, -2):
 
-        write("LAUNCHING IN " + countdown, Color.WHITE, Color.RED)
+        write("LAUNCHING IN " + str(countdown), Color.WHITE, Color.RED)
         (led.on() for led in leds)
         wait(0.1, SECONDS)
 
-        write("LAUNCHING IN " + countdown-1, Color.RED, Color.WHITE)
+        write("LAUNCHING IN " + str(countdown-1), Color.RED, Color.WHITE)
         (led.off() for led in leds)
         wait(0.1, SECONDS)
 
@@ -30,10 +34,9 @@ def shoot():
     wait(1, SECONDS)
     solenoid_a.set(False)
 
-def waitForBall():
-    write("Waiting...")
-    while not limit_switch_h.pressing():
-        wait(5, MSEC)
+    write("Aiming...")
+    aim(angle + 10)
+    aim(angle)
 
 def main():
     brain.screen.set_font(FontType.MONO60)
